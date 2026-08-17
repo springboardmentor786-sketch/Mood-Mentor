@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Compile check (syntax + import structure)
+        run: python -m py_compile db.py auth.py email_utils.py security.py nlp_pipeline.py recommendations.py backend.py app.py
+
+      - name: Build backend image
+        run: docker build -f Dockerfile.backend -t moodmentor-backend:ci .
+
+      - name: Build frontend image
+        run: docker build -f Dockerfile.frontend -t moodmentor-frontend:ci .
